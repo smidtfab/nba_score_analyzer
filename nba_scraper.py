@@ -48,7 +48,6 @@ class BoxScoreTraditionalV2Scraper():
     
     def get_request(self, params):
         response = requests.get(url=self.base_url, params=params, headers=self.headers, verify=False, timeout=self.timeout)
-        contents = response.text
         # custom return dictionary, TODO: modify
         cust_game = {
             'response_url': response.url,
@@ -60,12 +59,16 @@ class BoxScoreTraditionalV2Scraper():
     def load_response(self, scraper_response):
         # get all games for given day
         games = scraper_response['content']['resultSets'][1]
-
+        
         # get headers
         headers = games['headers']
 
         # get rows --> the games (2 rows per game with same gameid)
         rows = games['rowSet']
+        print(rows)
+
+        dictionary = dict(zip(headers, rows[0]))
+        print(dictionary)
 
         # create df from response
         df = pd.DataFrame(np.array(rows), columns=headers)
