@@ -6,7 +6,7 @@ import numpy as np
 import sys
 
 
-class BoxScoreTraditionalV2():
+class BoxScoreTraditionalV2Scraper():
     endpoint = 'boxscoretraditionalv2'
     expected_data = {'PlayerStats': ['GAME_ID', 'TEAM_ID', 'TEAM_ABBREVIATION', 'TEAM_CITY', 'PLAYER_ID', 'PLAYER_NAME', 'START_POSITION', 'COMMENT', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'PTS', 'PLUS_MINUS'], 'TeamStarterBenchStats': ['GAME_ID', 'TEAM_ID', 'TEAM_NAME', 'TEAM_ABBREVIATION', 'TEAM_CITY', 'STARTERS_BENCH', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'PTS'], 'TeamStats': ['GAME_ID', 'TEAM_ID', 'TEAM_NAME', 'TEAM_ABBREVIATION', 'TEAM_CITY', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'PTS', 'PLUS_MINUS']}
 
@@ -76,10 +76,8 @@ class BoxScoreTraditionalV2():
         df.to_csv(filename, mode='a', header=False)
 
 def main():
-    print sys.argv[0] # prints python_script.py
     date = sys.argv[1] # get date format --> "02/27/2020"
-    print date # prints var1
-    #print sys.argv[2] # prints var2
+    print("Scraping games on {}".format(date)) 
 
     parameters = {
         "DayOffset": "0",
@@ -87,7 +85,7 @@ def main():
         "gameDate": date
     }
 
-    scraper = BoxScoreTraditionalV2(base_url = 'https://stats.nba.com/stats/scoreboardV2')
+    scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
     scraper_response = scraper.get_request(params=parameters)
     response_df = scraper.load_response(scraper_response)
     print(response_df)
