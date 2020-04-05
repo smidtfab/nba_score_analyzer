@@ -1,6 +1,5 @@
 import pymongo
 from pymongo import MongoClient
-from nba_scraper import BoxScoreTraditionalV2Scraper
 
 class GamesDB():
 
