@@ -6,6 +6,7 @@ import numpy as np
 import sys
 import datetime
 
+from games_db import GamesDB
 
 class BoxScoreTraditionalV2Scraper():
     endpoint = 'boxscoretraditionalv2'
@@ -127,16 +128,25 @@ def main():
 
     print(dates)
 
-    #parameters = {
-    #    "DayOffset": "0",
-    #    "LeagueID": "00",
-    #    "gameDate": date
-    #}
+    gamesDB = GamesDB()
 
-    #scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
-    #scraper_response = scraper.get_request(params=parameters)
-    #response_df = scraper.load_response(scraper_response)
-    #print(response_df)
+    scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
+
+    for date in dates:
+        # define parameter dictionary to use for request
+        parameters = {
+            "DayOffset": "0",
+            "LeagueID": "00",
+            "gameDate": date
+        }
+
+        # send request
+        scraper_response = scraper.get_request(params=parameters)
+        response_df = scraper.load_response(scraper_response)
+        print(response_df)
+
+    # convert data frame to dictionary and save to mongodb
+    #gamesDB.insert_multiple(response_df.to_dict('records'))
 
 if __name__ == '__main__':
     main()
