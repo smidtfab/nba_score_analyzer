@@ -23,21 +23,3 @@ class GamesDB():
 
     #post = games.find_one({'author': 'Scott'})
     #print(post)
-
-gamesDB = GamesDB()
-
-parameters = {
-        "DayOffset": "0",
-        "LeagueID": "00",
-        "gameDate": "02/27/2020"
-    }
-
-scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
-scraper_response = scraper.get_request(params=parameters)
-response_df = scraper.load_response(scraper_response)
-print(response_df)
-
-# convert data frame to dictionary and save to mongodb
-gamesDB.insert_multiple(response_df.to_dict('records'))
-
-gamesDB.retrieve_all()
