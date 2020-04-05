@@ -4,6 +4,7 @@ import json
 import pandas as pd
 import numpy as np
 import sys
+import datetime
 
 
 class BoxScoreTraditionalV2Scraper():
@@ -78,20 +79,64 @@ class BoxScoreTraditionalV2Scraper():
     def write_games(self, filename, df):
         df.to_csv(filename, mode='a', header=False)
 
+def build_date_range(start_date_str, end_date_str):
+    # convert start and end date to datetime and calculate delta
+    start_date = datetime.datetime.strptime(start_date_str, '%m/%d/%Y')
+    end_date = datetime.datetime.strptime(end_date_str, '%m/%d/%Y')
+    delta = end_date - start_date
+
+    # difference has to be greater zero
+    assert delta.days > 0, "Invalid input of dates"
+
+    dates = []
+
+    for i in range(delta.days + 1):
+        date_time = start_date + datetime.timedelta(days=i)
+
+        # convert date_time back to string
+        date_str = date_time.strftime('%m/%d/%Y')
+
+        # add to list
+        dates.append(date_str)
+
+    # list has to have elements
+    assert len(dates) != 0, "List is empty."
+
+    return dates
+
 def main():
-    date = sys.argv[1] # get date format --> "02/27/2020"
-    print("Scraping games on {}".format(date)) 
+    # Initialize empty list to be filled with dates to scrape
+    dates = []
 
-    parameters = {
-        "DayOffset": "0",
-        "LeagueID": "00",
-        "gameDate": date
-    }
+    # check if second param (the end date) was passed
+    if len(sys.argv) > 2:
+        # two dates passed
+        start_date_str = sys.argv[1] # get date format --> "02/27/2020"
+        end_date_str = sys.argv[2] # get date format --> "02/27/2020"
+        print("Scraping games from {} until {}".format(start_date_str, end_date_str)) 
+        
+        # fill dates array dates
+        dates = build_date_range(start_date_str, end_date_str)
+    else:
+        # only one date passed
+        start_date_str = sys.argv[1] # get date format --> "02/27/2020"
+        print("Scraping games on {}".format(start_date_str)) 
 
-    scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
-    scraper_response = scraper.get_request(params=parameters)
-    response_df = scraper.load_response(scraper_response)
-    print(response_df)
+        # fill dates with the only date
+        dates.append(start_date_str)
+
+    print(dates)
+
+    #parameters = {
+    #    "DayOffset": "0",
+    #    "LeagueID": "00",
+    #    "gameDate": date
+    #}
+
+    #scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
+    #scraper_response = scraper.get_request(params=parameters)
+    #response_df = scraper.load_response(scraper_response)
+    #print(response_df)
 
 if __name__ == '__main__':
     main()
