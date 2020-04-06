@@ -145,8 +145,11 @@ def main():
         response_df = scraper.load_response(scraper_response)
         print(response_df)
 
-    # convert data frame to dictionary and save to mongodb
-    #gamesDB.insert_multiple(response_df.to_dict('records'))
+        # convert data frame to dictionary and save to mongodb
+        gamesDB.update_games(response_df.to_dict('records'))
+
+    gamesDB.retrieve_all()
+
 
 if __name__ == '__main__':
     main()
