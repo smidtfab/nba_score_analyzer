@@ -1,6 +1,7 @@
 import pymongo
 from pymongo import MongoClient
 from pymongo import UpdateOne
+import pandas as pd
 
 class GamesDB():
 
@@ -32,8 +33,14 @@ class GamesDB():
         print(result.inserted_ids)
 
     def retrieve_all(self):
+        games = []
         for game in GamesDB.games_db.find():
-            print(game)
+            #print(game)
+            games.append(game)
+        return games
 
     def remove_all(self):
         GamesDB.games_db.remove()
+
+    def convert_to_df(self, list_of_dic):
+        return pd.DataFrame(list_of_dic)
