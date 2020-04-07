@@ -103,6 +103,33 @@ def build_date_range(start_date_str, end_date_str):
 
     return dates
 
+def scrape_date_range(dates):
+    # class to access mongo data base
+    gamesDB = GamesDB()
+
+    # scraper class to retrieve game data
+    scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
+
+    # use date range provided by build_date_range 
+    for date in dates:
+        # define parameter dictionary to use for request
+        parameters = {
+            "DayOffset": "0",
+            "LeagueID": "00",
+            "gameDate": date
+        }
+
+        # send request
+        scraper_response = scraper.get_request(params=parameters)
+        response_df = scraper.load_response(scraper_response)
+        print(response_df)
+
+        # convert data frame to dictionary and save to mongodb
+        if response_df is not None:
+            gamesDB.update_games(response_df.to_dict('records'))
+
+    #gamesDB.retrieve_all()
+
 def main():
     # Initialize empty list to be filled with dates to scrape
     dates = []
@@ -124,30 +151,8 @@ def main():
         # fill dates with the only date
         dates.append(start_date_str)
 
-    print(dates)
-
-    gamesDB = GamesDB()
-
-    scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
-
-    for date in dates:
-        # define parameter dictionary to use for request
-        parameters = {
-            "DayOffset": "0",
-            "LeagueID": "00",
-            "gameDate": date
-        }
-
-        # send request
-        scraper_response = scraper.get_request(params=parameters)
-        response_df = scraper.load_response(scraper_response)
-        print(response_df)
-
-        # convert data frame to dictionary and save to mongodb
-        if response_df is not None:
-            gamesDB.update_games(response_df.to_dict('records'))
-
-    gamesDB.retrieve_all()
+    # scrape the data for given range and store in db
+    scrape_date_range(dates)
 
 
 if __name__ == '__main__':
