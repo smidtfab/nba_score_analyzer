@@ -67,14 +67,12 @@ class BoxScoreTraditionalV2Scraper():
 
         # get rows --> the games (2 rows per game with same gameid)
         rows = games['rowSet']
-        print(rows)
-
-        dictionary = dict(zip(headers, rows[0]))
-        print(dictionary)
 
         # create df from response
-        df = pd.DataFrame(np.array(rows), columns=headers)
-        
+        if len(rows) > 0:
+            df = pd.DataFrame(np.array(rows), columns=headers)
+        else:
+            df = None
         return df
 
     def write_games(self, filename, df):
@@ -146,7 +144,8 @@ def main():
         print(response_df)
 
         # convert data frame to dictionary and save to mongodb
-        gamesDB.update_games(response_df.to_dict('records'))
+        if response_df is not None:
+            gamesDB.update_games(response_df.to_dict('records'))
 
     gamesDB.retrieve_all()
 
