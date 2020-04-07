@@ -125,10 +125,16 @@ def scrape_date_range(dates):
         print(response_df)
 
         # convert data frame to dictionary and save to mongodb
-        if response_df is not None:
+        if (response_df is not None and not response_df['PTS'].isnull().values.any()):
+            # if scraping returned games for that day save them
             gamesDB.update_games(response_df.to_dict('records'))
+        elif response_df['PTS'].isnull().values.any():
+            # if any game is not played on that day stop scraping
+            break
 
     #gamesDB.retrieve_all()
+
+    #gamesDB.games_db.remove( { 'PTS': None } )
 
 def main():
     # Initialize empty list to be filled with dates to scrape
