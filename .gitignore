@@ -1,1 +1,4 @@
 games.csv
+__pycache__/
+.vscode/
+*.pyc

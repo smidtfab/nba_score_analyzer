@@ -4,7 +4,9 @@ import json
 import pandas as pd
 import numpy as np
 import sys
+import datetime
 
+from games_db import GamesDB
 
 class BoxScoreTraditionalV2Scraper():
     endpoint = 'boxscoretraditionalv2'
@@ -48,7 +50,6 @@ class BoxScoreTraditionalV2Scraper():
     
     def get_request(self, params):
         response = requests.get(url=self.base_url, params=params, headers=self.headers, verify=False, timeout=self.timeout)
-        contents = response.text
         # custom return dictionary, TODO: modify
         cust_game = {
             'response_url': response.url,
@@ -60,7 +61,7 @@ class BoxScoreTraditionalV2Scraper():
     def load_response(self, scraper_response):
         # get all games for given day
         games = scraper_response['content']['resultSets'][1]
-
+        
         # get headers
         headers = games['headers']
 
@@ -68,27 +69,97 @@ class BoxScoreTraditionalV2Scraper():
         rows = games['rowSet']
 
         # create df from response
-        df = pd.DataFrame(np.array(rows), columns=headers)
-        
+        if len(rows) > 0:
+            df = pd.DataFrame(np.array(rows), columns=headers)
+        else:
+            df = None
         return df
 
     def write_games(self, filename, df):
         df.to_csv(filename, mode='a', header=False)
 
-def main():
-    date = sys.argv[1] # get date format --> "02/27/2020"
-    print("Scraping games on {}".format(date)) 
+def build_date_range(start_date_str, end_date_str):
+    # convert start and end date to datetime and calculate delta
+    start_date = datetime.datetime.strptime(start_date_str, '%m/%d/%Y')
+    end_date = datetime.datetime.strptime(end_date_str, '%m/%d/%Y')
+    delta = end_date - start_date
 
-    parameters = {
-        "DayOffset": "0",
-        "LeagueID": "00",
-        "gameDate": date
-    }
+    # difference has to be greater zero
+    assert delta.days > 0, "Invalid input of dates"
 
+    dates = []
+
+    for i in range(delta.days + 1):
+        date_time = start_date + datetime.timedelta(days=i)
+
+        # convert date_time back to string
+        date_str = date_time.strftime('%m/%d/%Y')
+
+        # add to list
+        dates.append(date_str)
+
+    # list has to have elements
+    assert len(dates) != 0, "List is empty."
+
+    return dates
+
+def scrape_date_range(dates):
+    # class to access mongo data base
+    gamesDB = GamesDB()
+
+    # scraper class to retrieve game data
     scraper = BoxScoreTraditionalV2Scraper(base_url = 'https://stats.nba.com/stats/scoreboardV2')
-    scraper_response = scraper.get_request(params=parameters)
-    response_df = scraper.load_response(scraper_response)
-    print(response_df)
+
+    # use date range provided by build_date_range 
+    for date in dates:
+        # define parameter dictionary to use for request
+        parameters = {
+            "DayOffset": "0",
+            "LeagueID": "00",
+            "gameDate": date
+        }
+
+        # send request
+        scraper_response = scraper.get_request(params=parameters)
+        response_df = scraper.load_response(scraper_response)
+        print(response_df)
+
+        # convert data frame to dictionary and save to mongodb
+        if (response_df is not None and not response_df['PTS'].isnull().values.any()):
+            # if scraping returned games for that day save them
+            gamesDB.update_games(response_df.to_dict('records'))
+        elif response_df['PTS'].isnull().values.any():
+            # if any game is not played on that day stop scraping
+            break
+
+    #gamesDB.retrieve_all()
+
+    #gamesDB.games_db.remove( { 'PTS': None } )
+
+def main():
+    # Initialize empty list to be filled with dates to scrape
+    dates = []
+
+    # check if second param (the end date) was passed
+    if len(sys.argv) > 2:
+        # two dates passed
+        start_date_str = sys.argv[1] # get date format --> "02/27/2020"
+        end_date_str = sys.argv[2] # get date format --> "02/27/2020"
+        print("Scraping games from {} until {}".format(start_date_str, end_date_str)) 
+        
+        # fill dates array dates
+        dates = build_date_range(start_date_str, end_date_str)
+    else:
+        # only one date passed
+        start_date_str = sys.argv[1] # get date format --> "02/27/2020"
+        print("Scraping games on {}".format(start_date_str)) 
+
+        # fill dates with the only date
+        dates.append(start_date_str)
+
+    # scrape the data for given range and store in db
+    scrape_date_range(dates)
+
 
 if __name__ == '__main__':
     main()
