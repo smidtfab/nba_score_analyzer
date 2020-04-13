@@ -1,7 +1,7 @@
 # nba_score_analyzer
 
-# Research
-## Scraping
+## Research
+### Scraping
 For play by play: 
 https://nycdatascience.com/blog/student-works/scraping-nba-play-by-play-data-with-scrapy-mongodb/ 
 
@@ -10,7 +10,7 @@ https://nycdatascience.com/blog/student-works/scraping-nba-play-by-play-data-wit
 General static scraper: 
 https://towardsdatascience.com/web-scraping-nba-stats-4b4f8c525994 
 
-## Prediction
+### Prediction
 
 Paper on prediction of game outcome: 
 https://www.researchgate.net/publication/312236952_Predicting_the_Outcome_of_NBA_Playoffs_Based_on_the_Maximum_Entropy_Principle 
