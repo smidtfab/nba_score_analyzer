@@ -1,6 +1,6 @@
 # NBA Score Analyzer
+[![Issues !](https://img.shields.io/github/issues/smidtfab/nba_score_analyzer)](https://github.com/smidtfab/nba_score_analyzer/issues)<br>
 A full stack application based on python and mongodb to scrape game data from [https://stats.nba.com/](https://stats.nba.com/) and build a continuous predictor.
-
 ## Development Setup
 
 First, clone repo if you haven't already and navigate into project directory e.g. Documents/nba_score_analyzer:
